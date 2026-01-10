@@ -1,0 +1,136 @@
+import type {CalculatorState} from "../models/CalculatorState.ts";
+import {Operation, type OperationValue} from "../shared/types/Operation.ts";
+import type {TermToken} from "../shared/types/TermToken.ts";
+
+export class OperationService {
+    deleteToken(calculatorState: CalculatorState): CalculatorState {
+        const newInputValue = calculatorState.inputValue.slice(0, calculatorState.inputValue.length - 1)
+        const termLastIndex = calculatorState.term.length - 1
+        const value = calculatorState.term[termLastIndex]
+        if (typeof value !== "number") {
+            return {
+                ...calculatorState,
+                inputValue: newInputValue,
+                term: [...calculatorState.term.slice(0, termLastIndex)],
+            };
+        }
+        return {
+            ...calculatorState,
+            inputValue: newInputValue,
+            term: [...calculatorState.term.slice(0, termLastIndex), +value.toString().slice(0, value.toString().length - 1)],
+        };
+    }
+
+    addDigit(calculatorState: CalculatorState, digit: number): CalculatorState {
+        if (calculatorState.isCalculated) {
+            return calculatorState;
+        }
+        const newInputValue = calculatorState.inputValue.concat(`${digit}`)
+        const termLengthReduced = calculatorState.term.length - 1
+        const value = calculatorState.term[termLengthReduced]
+        if (typeof value !== "number") {
+            return {
+                inputValue: newInputValue,
+                term: [...calculatorState.term, digit],
+                isCalculated: calculatorState.isCalculated
+            }
+        }
+        calculatorState.term.slice(0, calculatorState.term.length - 1).push(value * 10 + digit)
+        return {
+            inputValue: newInputValue,
+            term: [...calculatorState.term.slice(0, termLengthReduced), value * 10 + digit],
+            isCalculated: calculatorState.isCalculated
+        }
+    }
+
+    addOperation(calculatorState: CalculatorState, operation: OperationValue): CalculatorState {
+        if (calculatorState.inputValue.length === 0) {
+            alert(`You can't use "${operation}" OperationService on empty field!`)
+            return calculatorState;
+        }
+        const termLengthReduced = calculatorState.term.length - 1
+        const value = calculatorState.term[termLengthReduced]
+        if (typeof value !== "number") {
+            return calculatorState;
+        }
+        return {
+            inputValue: calculatorState.inputValue.concat(operation),
+            term: [...calculatorState.term, operation],
+            isCalculated: false
+        }
+    }
+
+    resetInput(): CalculatorState {
+        return {
+            inputValue: "",
+            term: [],
+            isCalculated: false,
+        }
+    }
+
+    private calculate(numberOne: number, operator: OperationValue, numberTwo: number): number {
+        switch (operator) {
+            case "+":
+                return numberOne + numberTwo
+            case "-":
+                return numberOne - numberTwo
+            case "*":
+                return numberOne * numberTwo
+            case "/":
+                return numberOne / numberTwo
+            case "%":
+                return numberOne % numberTwo
+            default:
+                throw new Error("Unknown operator operator")
+        }
+    }
+
+    private calculatePointOperationFirst(calculatorState: CalculatorState): (TermToken)[] {
+        const calculatedTerm: TermToken[] = []
+        calculatorState.term.forEach((element, index) => {
+            if (calculatedTerm.length === index) {
+                calculatedTerm.push(element)
+            }
+            if ((element === Operation.Multiplication || element === Operation.Division)) {
+                const leftTerm = calculatorState.term[index - 1]
+                const rightTerm = calculatorState.term[index + 1]
+                const res = this.calculate(leftTerm as number, element, rightTerm as number)
+                calculatedTerm.pop()
+                calculatedTerm.pop()
+                calculatedTerm.push(res)
+            }
+        })
+        return calculatedTerm
+    }
+
+    extractInputText(calculatorState: CalculatorState): number {
+        let numberOne: number | null = null
+        let operation: OperationValue | null = null
+        let numberTwo: number | null = null
+        let result: number = 0
+        const sortedTerm = this.calculatePointOperationFirst(calculatorState)
+        if(sortedTerm.length === 1){
+            return sortedTerm[0] as number;
+        }
+        sortedTerm.forEach(element => {
+            if (typeof element === "number" && numberOne === null) {
+                numberOne = element;
+                return;
+            }
+            if (typeof element !== "number" && operation === null) {
+                operation = element;
+                return;
+            }
+            if (typeof element === "number" && numberOne !== null && numberTwo === null) {
+                numberTwo = element;
+            }
+            if (numberOne !== null && numberTwo !== null && operation !== null) {
+                numberOne = this.calculate(numberOne as number, operation as OperationValue, numberTwo as number)
+                numberTwo = null
+                operation = null
+                result = numberOne
+            }
+        })
+        return result
+    }
+}
