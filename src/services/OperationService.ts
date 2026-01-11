@@ -93,6 +93,30 @@ export class OperationService {
         return num * (-1)
     }
 
+    calculateLog(num: number):number{
+        return Math.log10(num)
+    }
+
+    calculateLn(num: number):number{
+        return Math.log(num)
+    }
+
+    calculateTenPowerX(num: number):number{
+        return Math.log10(num)
+    }
+
+    calculatePowXY(x: number, y: number):number{
+        return Math.pow(x,y)
+    }
+
+    takeAbs(num: number){
+        return Math.abs(num)
+    }
+
+    calculateOneDividedBy(num:number): number{
+        return num > 0 ? 1 / num : -1
+    }
+
     calculateFaculty(num: number): number {
         if (num == 0) {
             return 1;

@@ -17,6 +17,8 @@ export function Calculator() {
         isCalculated: false,
         history: [],
     });
+    const eulerNumber: number = Math.E
+    const pi: number = Math.PI
 
     function handleDeleteToken() {
         setCalculatorState(prevState => {
@@ -78,10 +80,74 @@ export function Calculator() {
             for (let i = prevState.inputValue.length - 1; !Number.isNaN(+prevState.inputValue[i]); i--) {
                 inputNext = prevState.inputValue.slice(0, i)
             }
-            return{
+            return {
                 ...prevState,
                 term: [...prevState.term.slice(0, -1), termNext],
                 inputValue: inputNext + `${termNext}`,
+            }
+        })
+    }
+
+    function handleLogOperation() {
+        setCalculatorState(prevState => {
+            const termNext = operationService.calculateLog(prevState.term[prevState.term.length - 1] as number)
+            let inputNext = ""
+            for (let i = prevState.inputValue.length - 1; !Number.isNaN(+prevState.inputValue[i]); i--) {
+                inputNext = prevState.inputValue.slice(0, i)
+            }
+            return {
+                ...prevState,
+                term: [...prevState.term.slice(0, -1), termNext],
+                inputValue: inputNext + `${termNext}`,
+                history: [...prevState.history, "log("+ prevState.inputValue + ")=" + `${termNext}` + "\n"]
+            }
+        })
+    }
+
+    function handleLnOperation() {
+        setCalculatorState(prevState => {
+            const termNext = operationService.calculateLn(prevState.term[prevState.term.length - 1] as number)
+            let inputNext = ""
+            for (let i = prevState.inputValue.length - 1; !Number.isNaN(+prevState.inputValue[i]); i--) {
+                inputNext = prevState.inputValue.slice(0, i)
+            }
+            return {
+                ...prevState,
+                term: [...prevState.term.slice(0, -1), termNext],
+                inputValue: inputNext + `${termNext}`,
+                history: [...prevState.history, "ln("+ prevState.inputValue + ")=" + `${termNext}` + "\n"]
+            }
+        })
+    }
+
+    function handleOneDevidedByOperation() {
+        setCalculatorState(prevState => {
+            const termNext = operationService.calculateOneDividedBy(prevState.term[prevState.term.length - 1] as number)
+            let inputNext = ""
+            for (let i = prevState.inputValue.length - 1; !Number.isNaN(+prevState.inputValue[i]); i--) {
+                inputNext = prevState.inputValue.slice(0, i)
+            }
+            return {
+                ...prevState,
+                term: [...prevState.term.slice(0, -1), termNext],
+                inputValue: inputNext + `${termNext}`,
+                history: [...prevState.history, "1 / "+ prevState.inputValue + " =" + `${termNext}` + "\n"]
+            }
+        })
+    }
+
+    function handleTakeAbsOperation() {
+        setCalculatorState(prevState => {
+            const termNext = operationService.takeAbs(prevState.term[prevState.term.length - 1] as number)
+            let inputNext = ""
+            for (let i = prevState.inputValue.length - 1; !Number.isNaN(+prevState.inputValue[i]); i--) {
+                inputNext = prevState.inputValue.slice(0, i)
+            }
+            return {
+                ...prevState,
+                term: [...prevState.term.slice(0, -1), termNext],
+                inputValue: inputNext + `${termNext}`,
+                history: [...prevState.history, "abs("+ prevState.inputValue + ") =" + `${termNext}` + "\n"]
             }
         })
     }
@@ -90,17 +156,17 @@ export function Calculator() {
     const object: (CalculatorButtonAction)[][] = [
         [
             { id:0, label: "functions", action:()=>{ console.log("Reset") } },
-            { id:1, class: "bx bx-pi font-bold", action:()=>{ handleAddDigit(3.14) } },
-            { id:2, label: "e", action:()=>{ handleAddDigit(2.71828) } },
+            { id:1, class: "bx bx-pi font-bold", action:()=>{ handleAddDigit(pi) } },
+            { id:2, label: "e", action:()=>{ handleAddDigit(eulerNumber) } },
             { id:3, label: "Reset", action:()=>{ handleResetInput() } },
             { id:4, class: "pi pi-delete-left", action:()=>{ handleDeleteToken() } },
         ],
         [
             { id:0, label: "x²", action:()=>{ console.log("emtpy") } },
-            { id:1, label: "1/x", action:()=>{ console.log("emtpy") } },
-            { id:2, label: "|x|", action:()=>{ console.log("emtpy") } },
+            { id:1, label: "⅟x", action:()=>{ handleOneDevidedByOperation() } },
+            { id:2, label: "|x|", action:()=>{ handleTakeAbsOperation() } },
             { id:3, label: "exp", action:()=>{ console.log("Reset") } },
-            { id:4, class: "pi pi-percentage", action:()=>{ handleAddOperation(Operation.Percentage) } },
+            { id:4, label: "mod", action:()=>{ handleAddOperation(Operation.Percentage) } },
         ],
         [
             { id:0, class: "bx bx-square-root font-bold", action:()=>{ console.log("emtpy") } },
@@ -124,14 +190,14 @@ export function Calculator() {
             { id:4, class: "pi pi-minus", action:()=>{ handleAddOperation(Operation.Minus) } },
         ],
         [
-            { id:0, label: "log", action:()=>{ console.log("emtpy") } },
+            { id:0, label: "log", action:()=>{ handleLogOperation() } },
             { id:1, label: "1", action:()=>{ handleAddDigit(1) } },
             { id:2, label: "2", action:()=>{ handleAddDigit(2) } },
             { id:3, label: "3", action:()=>{ handleAddDigit(3) } },
             { id:4, class: "pi pi-plus", action:()=>{ handleAddOperation(Operation.Plus) } },
         ],
         [
-            { id:0, label: "ln", action:()=>{ console.log("emtpy") } },
+            { id:0, label: "ln", action:()=>{ handleLnOperation() } },
             { id:1, class: "bx bx-math-alt font-bold", action:()=>{ handleNegateOperation() } },
             { id:2, label: "0", action:()=>{ handleAddDigit(0) } },
             { id:3, label: ".", action:()=>{ console.log("Reset") } },
