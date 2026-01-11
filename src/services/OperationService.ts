@@ -30,6 +30,7 @@ export class OperationService {
         const value = calculatorState.term[termLengthReduced]
         if (typeof value !== "number") {
             return {
+                ...calculatorState,
                 inputValue: newInputValue,
                 term: [...calculatorState.term, digit],
                 isCalculated: calculatorState.isCalculated
@@ -37,6 +38,7 @@ export class OperationService {
         }
         calculatorState.term.slice(0, calculatorState.term.length - 1).push(value * 10 + digit)
         return {
+            ...calculatorState,
             inputValue: newInputValue,
             term: [...calculatorState.term.slice(0, termLengthReduced), value * 10 + digit],
             isCalculated: calculatorState.isCalculated
@@ -54,6 +56,7 @@ export class OperationService {
             return calculatorState;
         }
         return {
+            ...calculatorState,
             inputValue: calculatorState.inputValue.concat(operation),
             term: [...calculatorState.term, operation],
             isCalculated: false
@@ -65,6 +68,7 @@ export class OperationService {
             inputValue: "",
             term: [],
             isCalculated: false,
+            history: [""],
         }
     }
 
@@ -85,21 +89,36 @@ export class OperationService {
         }
     }
 
+    negateNumber(num: number): number {
+        return num * (-1)
+    }
+
+    calculateFaculty(num: number): number {
+        if (num == 0) {
+            return 1;
+        }
+        if (num == 1) {
+            return 1;
+        }
+        return num * this.calculateFaculty(num - 1)
+    }
+
     private calculatePointOperationFirst(calculatorState: CalculatorState): (TermToken)[] {
         const calculatedTerm: TermToken[] = []
-        calculatorState.term.forEach((element, index) => {
-            if (calculatedTerm.length === index) {
-                calculatedTerm.push(element)
+        for(const [index,element] of calculatorState.term.entries()) {
+            if(typeof calculatedTerm[calculatedTerm.length - 1] === "number" && typeof calculatorState.term[index + 1] !== "number"){
+                continue
             }
             if ((element === Operation.Multiplication || element === Operation.Division)) {
-                const leftTerm = calculatorState.term[index - 1]
+                const leftTerm = calculatedTerm[calculatedTerm.length - 1]
                 const rightTerm = calculatorState.term[index + 1]
                 const res = this.calculate(leftTerm as number, element, rightTerm as number)
                 calculatedTerm.pop()
-                calculatedTerm.pop()
                 calculatedTerm.push(res)
+                continue
             }
-        })
+            calculatedTerm.push(element)
+        }
         return calculatedTerm
     }
 
@@ -109,7 +128,7 @@ export class OperationService {
         let numberTwo: number | null = null
         let result: number = 0
         const sortedTerm = this.calculatePointOperationFirst(calculatorState)
-        if(sortedTerm.length === 1){
+        if (sortedTerm.length === 1) {
             return sortedTerm[0] as number;
         }
         sortedTerm.forEach(element => {

@@ -4,4 +4,5 @@ export interface CalculatorState {
     inputValue: string,
     term: TermToken[],
     isCalculated: boolean,
+    history: string[],
 }

@@ -6,6 +6,7 @@ import {useState} from "react";
 import {OperationService} from "../services/OperationService.ts";
 import type {CalculatorState} from "../models/CalculatorState.ts";
 import {Operation, type OperationValue} from "../shared/types/Operation.ts";
+import {Button} from "primereact/button";
 
 const operationService = new OperationService();
 
@@ -14,6 +15,7 @@ export function Calculator() {
         inputValue: "",
         term: [],
         isCalculated: false,
+        history: [],
     });
 
     function handleDeleteToken() {
@@ -45,9 +47,41 @@ export function Calculator() {
                 return prevState;
             }
             return {
-                inputValue: prevState.inputValue + "=" + operationService.extractInputText(prevState),
+                inputValue: `${operationService.extractInputText(prevState)}`,
                 term: [operationService.extractInputText(prevState)],
                 isCalculated: true,
+                history: [...prevState.history, prevState.inputValue + "=" + operationService.extractInputText(prevState) + "\n"]
+            }
+        })
+    }
+
+    function handleNegateOperation() {
+        setCalculatorState(prevState => {
+            const termNext = operationService.negateNumber(prevState.term[prevState.term.length - 1] as number)
+            let inputNext = ""
+            for (let i = prevState.inputValue.length - 1; !Number.isNaN(+prevState.inputValue[i]); i--) {
+                console.log(`When? ${prevState.inputValue.slice(0, i)}`)
+                inputNext = prevState.inputValue.slice(0, i)
+            }
+            return {
+                ...prevState,
+                term: [...prevState.term.slice(0, -1), termNext],
+                inputValue: inputNext + `${termNext}`,
+            }
+        })
+    }
+
+    function handleFacultyOperation() {
+        setCalculatorState(prevState => {
+            const termNext = operationService.calculateFaculty(prevState.term[prevState.term.length - 1] as number)
+            let inputNext = ""
+            for (let i = prevState.inputValue.length - 1; !Number.isNaN(+prevState.inputValue[i]); i--) {
+                inputNext = prevState.inputValue.slice(0, i)
+            }
+            return{
+                ...prevState,
+                term: [...prevState.term.slice(0, -1), termNext],
+                inputValue: inputNext + `${termNext}`,
             }
         })
     }
@@ -55,25 +89,25 @@ export function Calculator() {
     // @formatter:off
     const object: (CalculatorButtonAction)[][] = [
         [
-            { id:0, label: "2nd", action:()=>{ console.log("Reset") } },
-            { id:1, label: "PI", action:()=>{ handleAddDigit(3.14) } },
+            { id:0, label: "functions", action:()=>{ console.log("Reset") } },
+            { id:1, class: "bx bx-pi font-bold", action:()=>{ handleAddDigit(3.14) } },
             { id:2, label: "e", action:()=>{ handleAddDigit(2.71828) } },
             { id:3, label: "Reset", action:()=>{ handleResetInput() } },
             { id:4, class: "pi pi-delete-left", action:()=>{ handleDeleteToken() } },
         ],
         [
-            { id:0, label: "square", action:()=>{ console.log("emtpy") } },
+            { id:0, label: "x²", action:()=>{ console.log("emtpy") } },
             { id:1, label: "1/x", action:()=>{ console.log("emtpy") } },
             { id:2, label: "|x|", action:()=>{ console.log("emtpy") } },
             { id:3, label: "exp", action:()=>{ console.log("Reset") } },
             { id:4, class: "pi pi-percentage", action:()=>{ handleAddOperation(Operation.Percentage) } },
         ],
         [
-            { id:0, label: "squareRoot", action:()=>{ console.log("emtpy") } },
+            { id:0, class: "bx bx-square-root font-bold", action:()=>{ console.log("emtpy") } },
             { id:1, label: "(", action:()=>{ console.log("emtpy") } },
             { id:2, label: ")", action:()=>{ console.log("emtpy") } },
-            { id:3, label: "n!", action:()=>{ console.log("Reset") } },
-            { id:4, label: "/", action:()=>{ handleAddOperation(Operation.Division) } },
+            { id:3, label: "n!", action:()=>{ handleFacultyOperation() } },
+            { id:4, class: "bx bx-division font-bold", action:()=>{ handleAddOperation(Operation.Division) } },
         ],
         [
             { id:0, label: "x^y", action:()=>{ console.log("emtpy") } },
@@ -98,9 +132,9 @@ export function Calculator() {
         ],
         [
             { id:0, label: "ln", action:()=>{ console.log("emtpy") } },
-            { id:1, label: "+/-", action:()=>{ console.log("emtpy") } },
+            { id:1, class: "bx bx-math-alt font-bold", action:()=>{ handleNegateOperation() } },
             { id:2, label: "0", action:()=>{ handleAddDigit(0) } },
-            { id:3, label: ",", action:()=>{ console.log("Reset") } },
+            { id:3, label: ".", action:()=>{ console.log("Reset") } },
             { id:4, class: "pi pi-equals", action:()=>{ handleEqualsOperation() } },
         ],
     ];
@@ -110,21 +144,28 @@ export function Calculator() {
             <h1>Welcome to our Calculator Page.</h1>
             <p>Here you can use different calculation from normal Operation to high Operation and so on.</p>
             <Card>
-                <InputText className="mb-6" placeholder="" value={calculatorState.inputValue}
-                           onChange={
-                               (e) => setCalculatorState(prevState => {
-                                   return {
-                                       inputValue: e.target.value,
-                                       term: prevState.term,
-                                       isCalculated: prevState.isCalculated
-                                   }
-                               })
-                           }/>
+                <div className={"flex flex-column"}>
+                    <InputText className="mb-6 text-4xl" placeholder="" value={calculatorState.inputValue}
+                               onChange={
+                                   (e) => setCalculatorState(prevState => {
+                                       return {
+                                           ...prevState,
+                                           inputValue: e.target.value,
+                                       }
+                                   })
+                               }/>
+                </div>
+                <Button rounded={false} severity="success" label={"Verifiy"} className={"mb-4"} onClick={() => {
+                    console.log(`inputValue: ${calculatorState.inputValue}; term: ${calculatorState.term};`)
+                }}></Button>
                 {
                     object.map((item, index) => (
                         <CalculatorGrid key={index} calculatorButtonAction={item}></CalculatorGrid>
                     ))
                 }
+            </Card>
+            <Card header={"Verlauf"} className={"text-4xl md:w-25rem"}>
+                {calculatorState.history}
             </Card>
         </>
     )
