@@ -133,7 +133,7 @@ export class OperationService {
             if(typeof calculatedTerm[calculatedTerm.length - 1] === "number" && typeof calculatorState.term[index + 1] !== "number"){
                 continue
             }
-            if ((element === Operation.Multiplication || element === Operation.Division)) {
+            if ((element === Operation.Multiplication || element === Operation.Division || element === Operation.Percentage)) {
                 const leftTerm = calculatedTerm[calculatedTerm.length - 1]
                 const rightTerm = calculatorState.term[index + 1]
                 const res = this.calculate(leftTerm as number, element, rightTerm as number)

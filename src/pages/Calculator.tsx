@@ -2,13 +2,15 @@ import type {CalculatorButtonAction} from "../models/CalculatorButtonAction.ts";
 import {CalculatorGrid} from "../components/CalculatorGrid.tsx";
 import {Card} from "primereact/card";
 import {InputText} from "primereact/inputtext";
-import {useState} from "react";
 import {OperationService} from "../services/OperationService.ts";
 import type {CalculatorState} from "../models/CalculatorState.ts";
 import {Operation, type OperationValue} from "../shared/types/Operation.ts";
 import {Button} from "primereact/button";
+import {useState} from "react";
+import {ParserService} from "../services/ParserService.ts";
 
 const operationService = new OperationService();
+const helperService = new ParserService();
 
 export function Calculator() {
     const [calculatorState, setCalculatorState] = useState<CalculatorState>({
@@ -17,6 +19,7 @@ export function Calculator() {
         isCalculated: false,
         history: [],
     });
+
     const eulerNumber: number = Math.E
     const pi: number = Math.PI
 
@@ -69,6 +72,7 @@ export function Calculator() {
                 ...prevState,
                 term: [...prevState.term.slice(0, -1), termNext],
                 inputValue: inputNext + `${termNext}`,
+                history: [...prevState.history, "neg(" + prevState.inputValue + ")=" + `${termNext}` + "\n"]
             }
         })
     }
@@ -84,6 +88,7 @@ export function Calculator() {
                 ...prevState,
                 term: [...prevState.term.slice(0, -1), termNext],
                 inputValue: inputNext + `${termNext}`,
+                history: [...prevState.history, "fact(" + prevState.inputValue + ")=" + `${termNext}` + "\n"]
             }
         })
     }
@@ -99,7 +104,7 @@ export function Calculator() {
                 ...prevState,
                 term: [...prevState.term.slice(0, -1), termNext],
                 inputValue: inputNext + `${termNext}`,
-                history: [...prevState.history, "log("+ prevState.inputValue + ")=" + `${termNext}` + "\n"]
+                history: [...prevState.history, "log(" + prevState.inputValue + ")=" + `${termNext}` + "\n"]
             }
         })
     }
@@ -115,7 +120,7 @@ export function Calculator() {
                 ...prevState,
                 term: [...prevState.term.slice(0, -1), termNext],
                 inputValue: inputNext + `${termNext}`,
-                history: [...prevState.history, "ln("+ prevState.inputValue + ")=" + `${termNext}` + "\n"]
+                history: [...prevState.history, "ln(" + prevState.inputValue + ")=" + `${termNext}` + "\n"]
             }
         })
     }
@@ -131,7 +136,7 @@ export function Calculator() {
                 ...prevState,
                 term: [...prevState.term.slice(0, -1), termNext],
                 inputValue: inputNext + `${termNext}`,
-                history: [...prevState.history, "1 / "+ prevState.inputValue + " =" + `${termNext}` + "\n"]
+                history: [...prevState.history, "1 / " + prevState.inputValue + " =" + `${termNext}` + "\n"]
             }
         })
     }
@@ -147,7 +152,7 @@ export function Calculator() {
                 ...prevState,
                 term: [...prevState.term.slice(0, -1), termNext],
                 inputValue: inputNext + `${termNext}`,
-                history: [...prevState.history, "abs("+ prevState.inputValue + ") =" + `${termNext}` + "\n"]
+                history: [...prevState.history, "abs(" + prevState.inputValue + ") =" + `${termNext}` + "\n"]
             }
         })
     }
@@ -223,6 +228,11 @@ export function Calculator() {
                 </div>
                 <Button rounded={false} severity="success" label={"Verifiy"} className={"mb-4"} onClick={() => {
                     console.log(`inputValue: ${calculatorState.inputValue}; term: ${calculatorState.term};`)
+                }}></Button>
+                <Button rounded={false} severity="success" label={"TestEval"} className={"mb-4"} onClick={() => {
+                   const term = "1.1+5*(1+2*(1-2)+(2*3))"
+                   const tree = helperService.parseStringToArrayTerm(term)
+                    console.log(tree)
                 }}></Button>
                 {
                     object.map((item, index) => (
