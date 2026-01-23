@@ -1,0 +1,1 @@
+export type MathFunction = "sin" | "cos" | "tan" | "log" | "ln" | "e" | "pow" | "sq" | "sqrt" | "neg" | "pi"

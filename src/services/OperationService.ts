@@ -117,14 +117,14 @@ export class OperationService {
         return num > 0 ? 1 / num : -1
     }
 
-    calculateFaculty(num: number): number {
+    Factorial(num: number): number {
         if (num == 0) {
             return 1;
         }
         if (num == 1) {
             return 1;
         }
-        return num * this.calculateFaculty(num - 1)
+        return num * this.Factorial(num - 1)
     }
 
     private calculatePointOperationFirst(calculatorState: CalculatorState): (TermToken)[] {
@@ -161,7 +161,7 @@ export class OperationService {
                 return;
             }
             if (typeof element !== "number" && operation === null) {
-                operation = element;
+                operation = element as OperationValue;
                 return;
             }
             if (typeof element === "number" && numberOne !== null && numberTwo === null) {

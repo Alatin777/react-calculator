@@ -1,5 +1,6 @@
 import type {TermToken} from "../shared/types/TermToken.ts";
 import {Operation, type OperationValue} from "../shared/types/Operation.ts";
+import type {MathFunction} from "../shared/types/MathFunction.ts";
 
 export class ParserService {
     private isStringOperation(value: string): boolean {
@@ -8,64 +9,98 @@ export class ParserService {
     }
 
     private isStringNumber(value: string): boolean {
-        return !isNaN(Number(value)) || value === "."
+        return value >= "0" && value <= "9" || value === "."
     }
 
-    private concatStringArray(stringArray: string[]): string {
+    private isStringLetter(value: string): boolean {
+        if (typeof value === "undefined") {
+            return false;
+        }
+        return !!(value.length === 1 && value.match(/[a-z]/i));
+    }
+
+    private isNumber(value: string): boolean {
+        return !isNaN(Number(value))
+    }
+
+    private concatStringArray(strings: string[]): string {
         let concatValue = ""
-        stringArray.forEach((item) => {
-            concatValue = concatValue + item
+        strings.forEach((char: string) => {
+            concatValue = concatValue + char
         })
         return concatValue
     }
 
-    private getArrayLengths(value: unknown): number[] {
-        if (!Array.isArray(value)) {
-            return [];
-        }
-        const result = [value.length];
-        for (const element of value) {
-            result.push(...this.getArrayLengths(element));
-        }
-        return result;
+    private isCloseParenthese(value: string): boolean {
+        return !!(typeof value !== "undefined" && Array.isArray(value));
     }
 
-    parseStringToArrayTerm(inputValue: string): TermToken[] {
+    private isFaculty(value: string): boolean {
+        return typeof value !== "undefined" && value === "!";
+    }
+
+    private isOperandToken(value: string): boolean {
+        return this.isNumber(value) || this.isFaculty(value) || this.isCloseParenthese(value);
+    }
+
+    private consumeIf(input: string, cursor: { index: number }, predicate: (value: string) => boolean): string[]{
+        const inputValue = input[cursor.index]
+        const currentArray: string[] = []
+        if (predicate(inputValue)) {
+            currentArray.push(inputValue);
+            cursor.index++
+            return currentArray.concat(this.consumeIf(input, cursor, predicate))
+        }
+        return currentArray;
+    }
+
+    private parseNumberStringToArray(input: string, cursor: { index: number }): string[] {
+        return this.consumeIf(input, cursor, this.isStringNumber)
+    }
+
+    private parseLetterToArray(input: string, cursor: { index: number }): string[] {
+        return this.consumeIf(input, cursor, this.isStringLetter)
+    }
+
+    parseStringToArrayTerm(input: string, cursor: { index: number }): TermToken[] {
         const termToken: TermToken[] = []
-        let currentValue: string[] = []
-        for (let index = 0; index < inputValue.length; index++) {
-            const inputIndexValue = inputValue[index]
+        while (cursor.index < input.length) {
             const termTokenLeftElement = termToken[termToken.length - 1]
-            if (this.isStringNumber(inputIndexValue)) {
-                currentValue.push(inputIndexValue)
-                if (this.isStringOperation(inputValue[index + 1]) || typeof inputValue[index + 1] === "undefined"
-                    || inputValue[index + 1] === ")") {
-                    termToken.push(+this.concatStringArray(currentValue))
-                    currentValue = []
-                }
+            if (this.isStringNumber(input[cursor.index])) {
+                const parsedNumber: string[] = this.parseNumberStringToArray(input, cursor)
+                termToken.push(+this.concatStringArray(parsedNumber))
+                continue
             }
-            if (this.isStringOperation(inputIndexValue)) {
-                termToken.push(inputIndexValue as OperationValue)
+            if (this.isStringOperation(input[cursor.index]) || input[cursor.index] === "!") {
+                termToken.push(input[cursor.index] as OperationValue)
+                cursor.index++
+                continue
             }
-            // if(!isNaN(Number(termTokenLeftElement)) && inputIndexValue === "!"){
-            //     termToken.push("!")
-            // }
-            if (inputIndexValue === "(") {
-                if (!isNaN(Number(termTokenLeftElement))) { // || termTokenLeftElement.toString() === "!"
+
+            if (this.isStringLetter(input[cursor.index])) {
+                if (this.isOperandToken(termTokenLeftElement as string)) {
                     termToken.push(Operation.Multiplication)
                 }
-                const slicedInputValue = inputValue.slice(index + 1, inputValue.length)
-                termToken.push(this.parseStringToArrayTerm(slicedInputValue))
-                const getTermsWholeLength = this.getArrayLengths(termToken).reduce(
-                    (accumulator, currentValue) => accumulator + currentValue, 0,
-                )
-                // index = index + (termToken[termToken.length - 1] as TermToken[]).length + 1
-                index = index + getTermsWholeLength
+                const parsedLetters: string[] = this.parseLetterToArray(input, cursor)
+                termToken.push(this.concatStringArray(parsedLetters) as MathFunction)
+                continue
             }
-            if (inputIndexValue === ")") {
+            if (input[cursor.index] === "(") {
+                if (this.isOperandToken(termTokenLeftElement as string)) {
+                    termToken.push(Operation.Multiplication)
+                }
+                cursor.index++
+                termToken.push(this.parseStringToArrayTerm(input, cursor))
+                continue
+            }
+
+            if (input[cursor.index] === ")") {
+                cursor.index++
                 return termToken
             }
+
+            throw new Error(`Unexpected character: ${input[cursor.index]}`);
         }
-        return termToken
+        return termToken;
     }
 }

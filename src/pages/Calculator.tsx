@@ -79,7 +79,7 @@ export function Calculator() {
 
     function handleFacultyOperation() {
         setCalculatorState(prevState => {
-            const termNext = operationService.calculateFaculty(prevState.term[prevState.term.length - 1] as number)
+            const termNext = operationService.Factorial(prevState.term[prevState.term.length - 1] as number)
             let inputNext = ""
             for (let i = prevState.inputValue.length - 1; !Number.isNaN(+prevState.inputValue[i]); i--) {
                 inputNext = prevState.inputValue.slice(0, i)
@@ -230,9 +230,11 @@ export function Calculator() {
                     console.log(`inputValue: ${calculatorState.inputValue}; term: ${calculatorState.term};`)
                 }}></Button>
                 <Button rounded={false} severity="success" label={"TestEval"} className={"mb-4"} onClick={() => {
-                   const term = "1.1+5*(1+2*(1-2)+(2*3))"
-                   const tree = helperService.parseStringToArrayTerm(term)
-                    console.log(tree)
+                    const word = "eln(3)"
+                    const cursor = {
+                        index: 0
+                    }
+                    console.log(helperService.parseStringToArrayTerm(word,cursor))
                 }}></Button>
                 {
                     object.map((item, index) => (
