@@ -1,6 +1,6 @@
 import type {TermToken} from "../shared/types/TermToken.ts";
 import {Operation, type OperationValue} from "../shared/types/Operation.ts";
-import type {MathFunction} from "../shared/types/MathFunction.ts";
+import {type MathFunctionValue} from "../shared/types/MathFunction.ts";
 
 export class ParserService {
     private isStringOperation(value: string): boolean {
@@ -43,7 +43,7 @@ export class ParserService {
         return this.isNumber(value) || this.isFaculty(value) || this.isCloseParenthese(value);
     }
 
-    private consumeIf(input: string, cursor: { index: number }, predicate: (value: string) => boolean): string[]{
+    private consumeIf(input: string, cursor: { index: number }, predicate: (value: string) => boolean): string[] {
         const inputValue = input[cursor.index]
         const currentArray: string[] = []
         if (predicate(inputValue)) {
@@ -62,7 +62,11 @@ export class ParserService {
         return this.consumeIf(input, cursor, this.isStringLetter)
     }
 
+    //TODO: How to consider 2 Functions concatinated "sincos"
     parseStringToArrayTerm(input: string, cursor: { index: number }): TermToken[] {
+        if (input.length === 0) {
+            throw new Error("Input is empty.");
+        }
         const termToken: TermToken[] = []
         while (cursor.index < input.length) {
             const termTokenLeftElement = termToken[termToken.length - 1]
@@ -82,9 +86,11 @@ export class ParserService {
                     termToken.push(Operation.Multiplication)
                 }
                 const parsedLetters: string[] = this.parseLetterToArray(input, cursor)
-                termToken.push(this.concatStringArray(parsedLetters) as MathFunction)
+                const concatinatedString: MathFunctionValue = this.concatStringArray(parsedLetters) as MathFunctionValue
+                termToken.push(concatinatedString)
                 continue
             }
+
             if (input[cursor.index] === "(") {
                 if (this.isOperandToken(termTokenLeftElement as string)) {
                     termToken.push(Operation.Multiplication)

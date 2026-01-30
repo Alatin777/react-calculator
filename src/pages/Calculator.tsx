@@ -1,16 +1,17 @@
 import type {CalculatorButtonAction} from "../models/CalculatorButtonAction.ts";
-import {CalculatorGrid} from "../components/CalculatorGrid.tsx";
 import {Card} from "primereact/card";
 import {InputText} from "primereact/inputtext";
 import {OperationService} from "../services/OperationService.ts";
 import type {CalculatorState} from "../models/CalculatorState.ts";
 import {Operation, type OperationValue} from "../shared/types/Operation.ts";
-import {Button} from "primereact/button";
 import {useState} from "react";
-import {ParserService} from "../services/ParserService.ts";
+// import {ParserService} from "../services/ParserService.ts";
+import {FlexGridCalculator} from "../components/FlexGridCalculator.tsx";
+import {ScrollPanel} from "primereact/scrollpanel";
 
 const operationService = new OperationService();
-const helperService = new ParserService();
+
+// const helperService = new ParserService();
 
 export function Calculator() {
     const [calculatorState, setCalculatorState] = useState<CalculatorState>({
@@ -42,7 +43,7 @@ export function Calculator() {
     }
 
     function handleResetInput() {
-        setCalculatorState(operationService.resetInput)
+        setCalculatorState(operationService.resetInput(calculatorState.history))
     }
 
     function handleEqualsOperation() {
@@ -160,53 +161,53 @@ export function Calculator() {
     // @formatter:off
     const object: (CalculatorButtonAction)[][] = [
         [
-            { id:0, label: "functions", action:()=>{ console.log("Reset") } },
-            { id:1, class: "bx bx-pi font-bold", action:()=>{ handleAddDigit(pi) } },
-            { id:2, label: "e", action:()=>{ handleAddDigit(eulerNumber) } },
-            { id:3, label: "Reset", action:()=>{ handleResetInput() } },
-            { id:4, class: "pi pi-delete-left", action:()=>{ handleDeleteToken() } },
+            { id:0, severity:"secondary", label: "func", action:()=>{ console.log("Reset") } },
+            { id:1, severity:"secondary", class: "bx bx-pi font-bold h-full", action:()=>{ handleAddDigit(pi) } },
+            { id:2, severity:"secondary", label: "e", action:()=>{ handleAddDigit(eulerNumber) } },
+            { id:3, severity:"danger", label: "Reset", action:()=>{ handleResetInput() } },
+            { id:4, severity:"warning", class: "pi pi-delete-left h-full", action:()=>{ handleDeleteToken() } },
         ],
         [
-            { id:0, label: "x²", action:()=>{ console.log("emtpy") } },
-            { id:1, label: "⅟x", action:()=>{ handleOneDevidedByOperation() } },
-            { id:2, label: "|x|", action:()=>{ handleTakeAbsOperation() } },
-            { id:3, label: "exp", action:()=>{ console.log("Reset") } },
-            { id:4, label: "mod", action:()=>{ handleAddOperation(Operation.Percentage) } },
+            { id:0, severity:"secondary", label: "x²", action:()=>{ console.log("empty") } },
+            { id:1, severity:"secondary", label: "⅟x", action:()=>{ handleOneDevidedByOperation() } },
+            { id:2, severity:"secondary", label: "|x|", action:()=>{ handleTakeAbsOperation() } },
+            { id:3, severity:"secondary", label: "exp", action:()=>{ console.log("Reset") } },
+            { id:4, severity:"secondary", label: "mod", action:()=>{ handleAddOperation(Operation.Percentage) } },
         ],
         [
-            { id:0, class: "bx bx-square-root font-bold", action:()=>{ console.log("emtpy") } },
-            { id:1, label: "(", action:()=>{ console.log("emtpy") } },
-            { id:2, label: ")", action:()=>{ console.log("emtpy") } },
-            { id:3, label: "n!", action:()=>{ handleFacultyOperation() } },
-            { id:4, class: "bx bx-division font-bold", action:()=>{ handleAddOperation(Operation.Division) } },
+            { id:0, severity:"secondary", class: "bx bx-square-root font-bold h-full", action:()=>{ console.log("empty") } },
+            { id:1, severity:"secondary", label: "(", action:()=>{ console.log("empty") } },
+            { id:2, severity:"secondary", label: ")", action:()=>{ console.log("empty") } },
+            { id:3, severity:"secondary", label: "n!", action:()=>{ handleFacultyOperation() } },
+            { id:4, severity:"secondary", class: "bx bx-division font-bold h-full", action:()=>{ handleAddOperation(Operation.Division) } },
         ],
         [
-            { id:0, label: "x^y", action:()=>{ console.log("emtpy") } },
-            { id:1, label: "7", action:()=>{ handleAddDigit(7) } },
-            { id:2, label: "8", action:()=>{ handleAddDigit(8) } },
-            { id:3, label: "9", action:()=>{ handleAddDigit(9) } },
-            { id:4, class: "pi pi-times", action:()=>{ handleAddOperation(Operation.Multiplication) } },
+            { id:0, severity:"secondary", label: "x^y", action:()=>{ console.log("empty") } },
+            { id:1, severity:"secondary", label: "7", action:()=>{ handleAddDigit(7) } },
+            { id:2, severity:"secondary", label: "8", action:()=>{ handleAddDigit(8) } },
+            { id:3, severity:"secondary", label: "9", action:()=>{ handleAddDigit(9) } },
+            { id:4, severity:"secondary", class: "pi pi-times h-full", action:()=>{ handleAddOperation(Operation.Multiplication) } },
         ],
         [
-            { id:0, label: "10^x", action:()=>{ console.log("emtpy") } },
-            { id:1, label: "4", action:()=>{ handleAddDigit(4) } },
-            { id:2, label: "5", action:()=>{ handleAddDigit(5) } },
-            { id:3, label: "6", action:()=>{ handleAddDigit(6) } },
-            { id:4, class: "pi pi-minus", action:()=>{ handleAddOperation(Operation.Minus) } },
+            { id:0, severity:"secondary", label: "10^x", action:()=>{ console.log("empty") } },
+            { id:1, severity:"secondary", label: "4", action:()=>{ handleAddDigit(4) } },
+            { id:2, severity:"secondary", label: "5", action:()=>{ handleAddDigit(5) } },
+            { id:3, severity:"secondary", class:"", label: "6", action:()=>{ handleAddDigit(6) } },
+            { id:4, severity:"secondary", class: "pi pi-minus h-full", action:()=>{ handleAddOperation(Operation.Minus) } },
         ],
         [
-            { id:0, label: "log", action:()=>{ handleLogOperation() } },
-            { id:1, label: "1", action:()=>{ handleAddDigit(1) } },
-            { id:2, label: "2", action:()=>{ handleAddDigit(2) } },
-            { id:3, label: "3", action:()=>{ handleAddDigit(3) } },
-            { id:4, class: "pi pi-plus", action:()=>{ handleAddOperation(Operation.Plus) } },
+            { id:0, severity:"secondary", label: "log", action:()=>{ handleLogOperation() } },
+            { id:1, severity:"secondary", label: "1", action:()=>{ handleAddDigit(1) } },
+            { id:2, severity:"secondary", label: "2", action:()=>{ handleAddDigit(2) } },
+            { id:3, severity:"secondary", label: "3", action:()=>{ handleAddDigit(3) } },
+            { id:4, severity:"secondary", class: "pi pi-plus h-full", action:()=>{ handleAddOperation(Operation.Plus) } },
         ],
         [
-            { id:0, label: "ln", action:()=>{ handleLnOperation() } },
-            { id:1, class: "bx bx-math-alt font-bold", action:()=>{ handleNegateOperation() } },
-            { id:2, label: "0", action:()=>{ handleAddDigit(0) } },
-            { id:3, label: ".", action:()=>{ console.log("Reset") } },
-            { id:4, class: "pi pi-equals", action:()=>{ handleEqualsOperation() } },
+            { id:0, severity:"secondary", label: "ln", action:()=>{ handleLnOperation() } },
+            { id:1, severity:"secondary", class: "bx bx-math-alt font-bold h-full", action:()=>{ handleNegateOperation() } },
+            { id:2, severity:"secondary", label: "0", action:()=>{ handleAddDigit(0) } },
+            { id:3, severity:"secondary", label: ".", action:()=>{ console.log("Reset") } },
+            { id:4, severity:"success", class: "pi pi-equals h-full", action:()=>{ handleEqualsOperation() } },
         ],
     ];
     // @formatter:on
@@ -214,37 +215,31 @@ export function Calculator() {
         <>
             <h1>Welcome to our Calculator Page.</h1>
             <p>Here you can use different calculation from normal Operation to high Operation and so on.</p>
-            <Card>
-                <div className={"flex flex-column"}>
-                    <InputText className="mb-6 text-4xl" placeholder="" value={calculatorState.inputValue}
-                               onChange={
-                                   (e) => setCalculatorState(prevState => {
-                                       return {
-                                           ...prevState,
-                                           inputValue: e.target.value,
-                                       }
-                                   })
-                               }/>
-                </div>
-                <Button rounded={false} severity="success" label={"Verifiy"} className={"mb-4"} onClick={() => {
-                    console.log(`inputValue: ${calculatorState.inputValue}; term: ${calculatorState.term};`)
-                }}></Button>
-                <Button rounded={false} severity="success" label={"TestEval"} className={"mb-4"} onClick={() => {
-                    const word = "eln(3)"
-                    const cursor = {
-                        index: 0
+            <div className={"flex flex-row gap-2 justify-center"}>
+                <Card className="w-4 bg-gray-900">
+                    <div className={"flex flex-column"}>
+                        <InputText className="mb-3 text-4xl" placeholder="" value={calculatorState.inputValue}
+                                   onChange={
+                                       (e) => setCalculatorState(prevState => {
+                                           return {
+                                               ...prevState,
+                                               inputValue: e.target.value,
+                                           }
+                                       })
+                                   }/>
+                    </div>
+                    {
+                        object.map((item, index) => (
+                            <FlexGridCalculator key={index} calculatorButtonAction={item}></FlexGridCalculator>
+                        ))
                     }
-                    console.log(helperService.parseStringToArrayTerm(word,cursor))
-                }}></Button>
-                {
-                    object.map((item, index) => (
-                        <CalculatorGrid key={index} calculatorButtonAction={item}></CalculatorGrid>
-                    ))
-                }
-            </Card>
-            <Card header={"Verlauf"} className={"text-4xl md:w-25rem"}>
-                {calculatorState.history}
-            </Card>
+                </Card>
+                <Card header={"Verlauf"} className={"bg-gray-900 text-4xl text-gray-50"}>
+                    <ScrollPanel className={"text-4xl md:w-26rem w-full h-25rem"}>
+                        {calculatorState.history}
+                    </ScrollPanel>
+                </Card>
+            </div>
         </>
     )
 }

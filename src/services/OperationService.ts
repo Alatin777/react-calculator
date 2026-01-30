@@ -63,12 +63,12 @@ export class OperationService {
         }
     }
 
-    resetInput(): CalculatorState {
+    resetInput(history: string[]): CalculatorState {
         return {
             inputValue: "",
             term: [],
             isCalculated: false,
-            history: [""],
+            history: history,
         }
     }
 

@@ -22,6 +22,20 @@ describe('ParserService', () => {
             const actual = parserService.parseStringToArrayTerm(inputValue, cursor)
             expect(actual).toStrictEqual(termToken)
         })
+        test('parse String "1+2*3" and get [1,"+",2,"*",3]', () => {
+            const inputValue: string = "1+2*3"
+            const cursor: { index: number } = {index: 0}
+            const termToken: TermToken[] = [1, "+", 2, "*", 3]
+            const actual = parserService.parseStringToArrayTerm(inputValue, cursor)
+            expect(actual).toStrictEqual(termToken)
+        })
+        test('parse String "1+2(1+2)" and get [1,"+",2,"*",[1,"+",2]]', () => {
+            const inputValue: string = "1+2(1+2)"
+            const cursor: { index: number } = {index: 0}
+            const termToken: TermToken[] = [1, "+", 2, "*", [1, "+", 2]]
+            const actual = parserService.parseStringToArrayTerm(inputValue, cursor)
+            expect(actual).toStrictEqual(termToken)
+        })
         test('parse String "ln(1)" and get ["ln",[1]]', () => {
             const inputValue: string = "ln(1)"
             const cursor: { index: number } = {index: 0}
@@ -29,7 +43,7 @@ describe('ParserService', () => {
             const actual = parserService.parseStringToArrayTerm(inputValue, cursor)
             expect(actual).toStrictEqual(termToken)
         })
-        test('parse String "1(2+3)" and get [1,*,[1+2]]', () => {
+        test('parse String "1(2+3)" and get [1,"*",[1,"+",2]]', () => {
             const inputValue: string = "1(2+3)"
             const cursor: { index: number } = {index: 0}
             const termToken: TermToken[] = [1, "*", [2, "+", 3]]
@@ -39,9 +53,47 @@ describe('ParserService', () => {
         test('parse String "eln(1)" and get ["e","*","ln",[1]]', () => {
             const inputValue: string = "eln(1)"
             const cursor: { index: number } = {index: 0}
-            const termToken: TermToken[] = ["e","*","ln",[1]]
+            const termToken: TermToken[] = ["e", "*", "ln", [1]]
             const actual = parserService.parseStringToArrayTerm(inputValue, cursor)
             expect(actual).toStrictEqual(termToken)
+        })
+        test('parse String "sincos(1)" and get ["sin",["cos",[1]]]', () => {
+            const inputValue: string = "sincos(1)"
+            const cursor: { index: number } = {index: 0}
+            const termToken: TermToken[] = ["sin", ["cos", [1]]]
+            const actual = parserService.parseStringToArrayTerm(inputValue, cursor)
+            expect(actual).toStrictEqual(termToken)
+        })
+        test('parse String "sin1" and get ["sin",[1]]', () => {
+            const inputValue: string = "sin1"
+            const cursor: { index: number } = {index: 0}
+            const termToken: TermToken[] = ["sin", [1]]
+            const actual = parserService.parseStringToArrayTerm(inputValue, cursor)
+            expect(actual).toStrictEqual(termToken)
+        })
+        test('throw Error when symbol is @', () => {
+            const inputValue: string = "@"
+            const cursor: { index: number } = {index: 0}
+            const expected = new Error(`Unexpected character: @`)
+            expect(() => {
+                parserService.parseStringToArrayTerm(inputValue, cursor)
+            }).toThrow(expected)
+        })
+        test('throw Error when input contains >', () => {
+            const inputValue: string = "2>"
+            const cursor: { index: number } = {index: 0}
+            const expected = new Error(`Unexpected character: >`)
+            expect(() => {
+                parserService.parseStringToArrayTerm(inputValue, cursor)
+            }).toThrow(expected)
+        })
+        test('throw Error when input is empty', () => {
+            const inputValue: string = ""
+            const cursor: { index: number } = {index: 0}
+            const expected = new Error("Input is empty.")
+            expect(() => {
+                parserService.parseStringToArrayTerm(inputValue, cursor)
+            }).toThrow(expected)
         })
     })
 })
