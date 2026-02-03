@@ -1,65 +1,39 @@
 import type {CalculatorState} from "../models/CalculatorState.ts";
 import {Operation, type OperationValue} from "../shared/types/Operation.ts";
 import type {TermToken} from "../shared/types/TermToken.ts";
+import type {ParserService} from "./ParserService.ts";
+import {HelperService} from "../shared/helperFunctions/HelperService.ts";
 
 export class OperationService {
+    private parserService: ParserService;
+    private helperService: HelperService;
+
+    constructor(parserService: ParserService) {
+        this.parserService = parserService;
+        this.helperService = new HelperService();
+    }
+
     deleteToken(calculatorState: CalculatorState): CalculatorState {
-        const newInputValue = calculatorState.inputValue.slice(0, calculatorState.inputValue.length - 1)
-        const termLastIndex = calculatorState.term.length - 1
-        const value = calculatorState.term[termLastIndex]
-        if (typeof value !== "number") {
-            return {
-                ...calculatorState,
-                inputValue: newInputValue,
-                term: [...calculatorState.term.slice(0, termLastIndex)],
-            };
-        }
         return {
             ...calculatorState,
-            inputValue: newInputValue,
-            term: [...calculatorState.term.slice(0, termLastIndex), +value.toString().slice(0, value.toString().length - 1)],
+            inputValue: calculatorState.inputValue.slice(0, calculatorState.inputValue.length - 1),
         };
     }
 
     addDigit(calculatorState: CalculatorState, digit: number): CalculatorState {
-        if (calculatorState.isCalculated) {
-            return calculatorState;
-        }
-        const newInputValue = calculatorState.inputValue.concat(`${digit}`)
-        const termLengthReduced = calculatorState.term.length - 1
-        const value = calculatorState.term[termLengthReduced]
-        if (typeof value !== "number") {
-            return {
-                ...calculatorState,
-                inputValue: newInputValue,
-                term: [...calculatorState.term, digit],
-                isCalculated: calculatorState.isCalculated
-            }
-        }
-        calculatorState.term.slice(0, calculatorState.term.length - 1).push(value * 10 + digit)
         return {
             ...calculatorState,
-            inputValue: newInputValue,
-            term: [...calculatorState.term.slice(0, termLengthReduced), value * 10 + digit],
-            isCalculated: calculatorState.isCalculated
+            inputValue: calculatorState.inputValue.concat(`${digit}`),
         }
     }
 
     addOperation(calculatorState: CalculatorState, operation: OperationValue): CalculatorState {
-        if (calculatorState.inputValue.length === 0) {
-            alert(`You can't use "${operation}" OperationService on empty field!`)
-            return calculatorState;
-        }
-        const termLengthReduced = calculatorState.term.length - 1
-        const value = calculatorState.term[termLengthReduced]
-        if (typeof value !== "number") {
+        if (calculatorState.inputValue.length === 0 && operation !== Operation.Minus) {
             return calculatorState;
         }
         return {
             ...calculatorState,
             inputValue: calculatorState.inputValue.concat(operation),
-            term: [...calculatorState.term, operation],
-            isCalculated: false
         }
     }
 
@@ -85,95 +59,117 @@ export class OperationService {
             case "%":
                 return numberOne % numberTwo
             default:
-                throw new Error("Unknown operator operator")
+                throw new Error(`Unknown operator ${operator}`)
         }
     }
 
-    negateNumber(num: number): number {
-        return num * (-1)
+    private applyNumberTransform(calculatorState: CalculatorState, mathOperationName: string, mathFunction: (num: number) => number): CalculatorState {
+        let inputNext = ""
+        let valueToEvaluate = ""
+        for (let i = calculatorState.inputValue.length - 1; this.helperService.isPartOfNumber(calculatorState.inputValue[i]); i--) {
+            valueToEvaluate = calculatorState.inputValue[i] + valueToEvaluate
+            inputNext = calculatorState.inputValue.slice(0, i)
+        }
+        return {
+            ...calculatorState,
+            inputValue: inputNext + `${mathFunction(+valueToEvaluate)}`,
+            history: [...calculatorState.history, `${mathOperationName}(` + calculatorState.inputValue + ")=" + `${mathFunction(+valueToEvaluate)}`]
+        }
     }
 
-    calculateLog(num: number):number{
-        return Math.log10(num)
+    negateNumber(calculatorState: CalculatorState): CalculatorState {
+        return this.applyNumberTransform(calculatorState, "neg", (num: number) => -num)
     }
 
-    calculateLn(num: number):number{
+    evaluateLog(calculatorState: CalculatorState): CalculatorState {
+        return this.applyNumberTransform(calculatorState, "log", Math.log10)
+    }
+
+    factorial(num: number): number {
+        return (num === 0 || num === 1) ? 1 : num * this.factorial(num - 1)
+    }
+
+    evaluateFactorial(calculatorState: CalculatorState) {
+        return this.applyNumberTransform(calculatorState, "fact", this.factorial.bind(this))
+    }
+
+    calculateLn(num: number): number {
         return Math.log(num)
     }
 
-    calculateTenPowerX(num: number):number{
+    calculateTenPowerX(num: number): number {
         return Math.log10(num)
     }
 
-    calculatePowXY(x: number, y: number):number{
-        return Math.pow(x,y)
+    calculatePowXY(x: number, y: number): number {
+        return Math.pow(x, y)
     }
 
-    takeAbs(num: number){
+    takeAbs(num: number) {
         return Math.abs(num)
     }
 
-    calculateOneDividedBy(num:number): number{
+    calculateOneDividedBy(num: number): number {
         return num > 0 ? 1 / num : -1
     }
 
-    Factorial(num: number): number {
-        if (num == 0) {
-            return 1;
-        }
-        if (num == 1) {
-            return 1;
-        }
-        return num * this.Factorial(num - 1)
+    evaluateParsedValue(calculatorState: CalculatorState): number {
+        const parsedTerm = this.parserService.parseStringToArrayTerm(calculatorState.inputValue, {index: 0});
+        return this.evaluateTerm(parsedTerm);
     }
 
-    private calculatePointOperationFirst(calculatorState: CalculatorState): (TermToken)[] {
-        const calculatedTerm: TermToken[] = []
-        for(const [index,element] of calculatorState.term.entries()) {
-            if(typeof calculatedTerm[calculatedTerm.length - 1] === "number" && typeof calculatorState.term[index + 1] !== "number"){
-                continue
-            }
-            if ((element === Operation.Multiplication || element === Operation.Division || element === Operation.Percentage)) {
-                const leftTerm = calculatedTerm[calculatedTerm.length - 1]
-                const rightTerm = calculatorState.term[index + 1]
-                const res = this.calculate(leftTerm as number, element, rightTerm as number)
-                calculatedTerm.pop()
-                calculatedTerm.push(res)
-                continue
-            }
-            calculatedTerm.push(element)
-        }
-        return calculatedTerm
+    private isTermDotOperation(element: TermToken): boolean {
+        return element === Operation.Multiplication || element === Operation.Division || element === Operation.Percentage;
     }
 
-    extractInputText(calculatorState: CalculatorState): number {
-        let numberOne: number | null = null
-        let operation: OperationValue | null = null
-        let numberTwo: number | null = null
-        let result: number = 0
-        const sortedTerm = this.calculatePointOperationFirst(calculatorState)
-        if (sortedTerm.length === 1) {
-            return sortedTerm[0] as number;
+    private isTermParenthesis(element: TermToken): element is TermToken[] {
+        return Array.isArray(element)
+    }
+
+    private isTermNumber(element: TermToken): element is number {
+        return typeof element === "number";
+    }
+
+    private getNumericValue(element: TermToken): number {
+        if (this.isTermParenthesis(element)) {
+            return this.evaluateTerm(element as TermToken[])
         }
-        sortedTerm.forEach(element => {
-            if (typeof element === "number" && numberOne === null) {
-                numberOne = element;
-                return;
+        if (this.isTermNumber(element)) {
+            return element;
+        }
+        throw Error(`Value is not a number but ${element}`);
+    }
+
+    private evaluateTerm(term: TermToken[]): number {
+        const result: TermToken[] = []
+        for (let i = 0; i < term.length; i++) {
+            if (this.isTermParenthesis(term[i])) {
+                result.push(this.evaluateTerm(term[i] as TermToken[]));
+            } else if (this.isTermDotOperation(term[i])) {
+                const left = result.pop() as number;
+                if (!this.isTermNumber(left)) {
+                    throw Error(`Left Term is not a number but ${left}`);
+                }
+                const right = this.getNumericValue(term[++i])
+                result.push(this.calculate(left, term[i - 1] as OperationValue, right));
+            } else {
+                result.push(term[i]);
             }
-            if (typeof element !== "number" && operation === null) {
-                operation = element as OperationValue;
-                return;
+        }
+        return this.evaluateDashOperation(result)
+    }
+
+    private evaluateDashOperation(term: TermToken[]): number {
+        let left = term[0] as number;
+        for (let i = 1; i < term.length; i += 2) {
+            let right = 0
+            if (this.isTermParenthesis(term[i + 1])) {
+                right = this.evaluateTerm(term[i + 1] as TermToken[])
+            } else {
+                right = term[i + 1] as number;
             }
-            if (typeof element === "number" && numberOne !== null && numberTwo === null) {
-                numberTwo = element;
-            }
-            if (numberOne !== null && numberTwo !== null && operation !== null) {
-                numberOne = this.calculate(numberOne as number, operation as OperationValue, numberTwo as number)
-                numberTwo = null
-                operation = null
-                result = numberOne
-            }
-        })
-        return result
+            left = this.calculate(left, term[i] as OperationValue, right);
+        }
+        return left;
     }
 }

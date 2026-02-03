@@ -62,7 +62,6 @@ export class ParserService {
         return this.consumeIf(input, cursor, this.isStringLetter)
     }
 
-    //TODO: How to consider 2 Functions concatinated "sincos"
     parseStringToArrayTerm(input: string, cursor: { index: number }): TermToken[] {
         if (input.length === 0) {
             throw new Error("Input is empty.");
@@ -70,6 +69,10 @@ export class ParserService {
         const termToken: TermToken[] = []
         while (cursor.index < input.length) {
             const termTokenLeftElement = termToken[termToken.length - 1]
+            if(input[cursor.index] === Operation.Minus && cursor.index === 0 ||
+                input[cursor.index] === Operation.Minus && input[cursor.index - 1] === "(" ){
+                termToken.push(0)
+            }
             if (this.isStringNumber(input[cursor.index])) {
                 const parsedNumber: string[] = this.parseNumberStringToArray(input, cursor)
                 termToken.push(+this.concatStringArray(parsedNumber))

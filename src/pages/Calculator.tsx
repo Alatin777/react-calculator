@@ -4,14 +4,16 @@ import {InputText} from "primereact/inputtext";
 import {OperationService} from "../services/OperationService.ts";
 import type {CalculatorState} from "../models/CalculatorState.ts";
 import {Operation, type OperationValue} from "../shared/types/Operation.ts";
-import {useState} from "react";
-// import {ParserService} from "../services/ParserService.ts";
+import {Fragment, useState} from "react";
+import {ParserService} from "../services/ParserService.ts";
 import {FlexGridCalculator} from "../components/FlexGridCalculator.tsx";
 import {ScrollPanel} from "primereact/scrollpanel";
+import {Tooltip} from "primereact/tooltip";
+import {Button} from "primereact/button";
+import {Dialog} from "primereact/dialog";
+import * as React from "react";
 
-const operationService = new OperationService();
-
-// const helperService = new ParserService();
+const operationService = new OperationService(new ParserService());
 
 export function Calculator() {
     const [calculatorState, setCalculatorState] = useState<CalculatorState>({
@@ -20,11 +22,32 @@ export function Calculator() {
         isCalculated: false,
         history: [],
     });
-
+    const [visible, setVisible] = useState(false);
     const eulerNumber: number = Math.E
     const pi: number = Math.PI
+    const onKeyDown = (event: React.KeyboardEvent) => {
+        switch (event.key) {
+            case "Enter":
+                handleEqualsOperation();
+                break;
+            case "e":
+                handleAddDigit(eulerNumber);
+                break;
+            case "s":
+                addSinFunctions();
+                break;
+            case "p":
+                handleAddDigit(pi);
+                break;
+        }
+    };
+    const cleanHistory = () => {
+        setCalculatorState(prevState => {
+            return {...prevState, history: [""]}
+        })
+    }
 
-    function handleDeleteToken() {
+    const handleDeleteToken = () => {
         setCalculatorState(prevState => {
             return operationService.deleteToken(prevState)
         })
@@ -42,6 +65,42 @@ export function Calculator() {
         })
     }
 
+    function addLeftParenthesis() {
+        setCalculatorState(prevState => {
+            return {
+                ...prevState,
+                inputValue: prevState.inputValue + "("
+            }
+        })
+    }
+
+    function addRightParenthesis() {
+        setCalculatorState(prevState => {
+            return {
+                ...prevState,
+                inputValue: prevState.inputValue + ")"
+            }
+        })
+    }
+
+    function addSinFunctions() {
+        setCalculatorState(prevState => {
+            return {
+                ...prevState,
+                inputValue: prevState.inputValue + "sin()"
+            }
+        })
+    }
+
+    function addPowFunctions() {
+        setCalculatorState(prevState => {
+            return {
+                ...prevState,
+                inputValue: prevState.inputValue + "Pow(,)"
+            }
+        })
+    }
+
     function handleResetInput() {
         setCalculatorState(operationService.resetInput(calculatorState.history))
     }
@@ -49,65 +108,40 @@ export function Calculator() {
     function handleEqualsOperation() {
         setCalculatorState(prevState => {
             if (prevState.inputValue.length === 0) {
-                alert("You can't use Equals OperationService on empty field!")
                 return prevState;
             }
             return {
-                inputValue: `${operationService.extractInputText(prevState)}`,
-                term: [operationService.extractInputText(prevState)],
-                isCalculated: true,
-                history: [...prevState.history, prevState.inputValue + "=" + operationService.extractInputText(prevState) + "\n"]
+                ...prevState,
+                inputValue: `${operationService.evaluateParsedValue(prevState)}`,
+                history: [...prevState.history, prevState.inputValue + `= ${operationService.evaluateParsedValue(prevState)}`]
             }
         })
     }
 
     function handleNegateOperation() {
-        setCalculatorState(prevState => {
-            const termNext = operationService.negateNumber(prevState.term[prevState.term.length - 1] as number)
-            let inputNext = ""
-            for (let i = prevState.inputValue.length - 1; !Number.isNaN(+prevState.inputValue[i]); i--) {
-                console.log(`When? ${prevState.inputValue.slice(0, i)}`)
-                inputNext = prevState.inputValue.slice(0, i)
-            }
-            return {
-                ...prevState,
-                term: [...prevState.term.slice(0, -1), termNext],
-                inputValue: inputNext + `${termNext}`,
-                history: [...prevState.history, "neg(" + prevState.inputValue + ")=" + `${termNext}` + "\n"]
-            }
-        })
+        setCalculatorState(operationService.negateNumber(calculatorState))
     }
 
     function handleFacultyOperation() {
-        setCalculatorState(prevState => {
-            const termNext = operationService.Factorial(prevState.term[prevState.term.length - 1] as number)
-            let inputNext = ""
-            for (let i = prevState.inputValue.length - 1; !Number.isNaN(+prevState.inputValue[i]); i--) {
-                inputNext = prevState.inputValue.slice(0, i)
-            }
-            return {
-                ...prevState,
-                term: [...prevState.term.slice(0, -1), termNext],
-                inputValue: inputNext + `${termNext}`,
-                history: [...prevState.history, "fact(" + prevState.inputValue + ")=" + `${termNext}` + "\n"]
-            }
-        })
+        setCalculatorState(operationService.evaluateFactorial(calculatorState)
+        //     prevState => {
+        //     const termNext = operationService.Factorial(prevState.term[prevState.term.length - 1] as number)
+        //     let inputNext = ""
+        //     for (let i = prevState.inputValue.length - 1; !Number.isNaN(+prevState.inputValue[i]); i--) {
+        //         inputNext = prevState.inputValue.slice(0, i)
+        //     }
+        //     return {
+        //         ...prevState,
+        //         term: [...prevState.term.slice(0, -1), termNext],
+        //         inputValue: inputNext + `${termNext}`,
+        //         history: [...prevState.history, "fact(" + prevState.inputValue + ")=" + `${termNext}`]
+        //     }
+        // }
+        )
     }
 
     function handleLogOperation() {
-        setCalculatorState(prevState => {
-            const termNext = operationService.calculateLog(prevState.term[prevState.term.length - 1] as number)
-            let inputNext = ""
-            for (let i = prevState.inputValue.length - 1; !Number.isNaN(+prevState.inputValue[i]); i--) {
-                inputNext = prevState.inputValue.slice(0, i)
-            }
-            return {
-                ...prevState,
-                term: [...prevState.term.slice(0, -1), termNext],
-                inputValue: inputNext + `${termNext}`,
-                history: [...prevState.history, "log(" + prevState.inputValue + ")=" + `${termNext}` + "\n"]
-            }
-        })
+        setCalculatorState(operationService.evaluateLog(calculatorState))
     }
 
     function handleLnOperation() {
@@ -121,7 +155,7 @@ export function Calculator() {
                 ...prevState,
                 term: [...prevState.term.slice(0, -1), termNext],
                 inputValue: inputNext + `${termNext}`,
-                history: [...prevState.history, "ln(" + prevState.inputValue + ")=" + `${termNext}` + "\n"]
+                history: [...prevState.history, "ln(" + prevState.inputValue + ")=" + `${termNext}`]
             }
         })
     }
@@ -137,7 +171,7 @@ export function Calculator() {
                 ...prevState,
                 term: [...prevState.term.slice(0, -1), termNext],
                 inputValue: inputNext + `${termNext}`,
-                history: [...prevState.history, "1 / " + prevState.inputValue + " =" + `${termNext}` + "\n"]
+                history: [...prevState.history, "1 / " + prevState.inputValue + " =" + `${termNext}`]
             }
         })
     }
@@ -153,7 +187,7 @@ export function Calculator() {
                 ...prevState,
                 term: [...prevState.term.slice(0, -1), termNext],
                 inputValue: inputNext + `${termNext}`,
-                history: [...prevState.history, "abs(" + prevState.inputValue + ") =" + `${termNext}` + "\n"]
+                history: [...prevState.history, "abs(" + prevState.inputValue + ") =" + `${termNext}`]
             }
         })
     }
@@ -161,7 +195,7 @@ export function Calculator() {
     // @formatter:off
     const object: (CalculatorButtonAction)[][] = [
         [
-            { id:0, severity:"secondary", label: "func", action:()=>{ console.log("Reset") } },
+            { id:0, severity:"secondary", label: "func", action:()=>{ setVisible(true) } },
             { id:1, severity:"secondary", class: "bx bx-pi font-bold h-full", action:()=>{ handleAddDigit(pi) } },
             { id:2, severity:"secondary", label: "e", action:()=>{ handleAddDigit(eulerNumber) } },
             { id:3, severity:"danger", label: "Reset", action:()=>{ handleResetInput() } },
@@ -176,8 +210,8 @@ export function Calculator() {
         ],
         [
             { id:0, severity:"secondary", class: "bx bx-square-root font-bold h-full", action:()=>{ console.log("empty") } },
-            { id:1, severity:"secondary", label: "(", action:()=>{ console.log("empty") } },
-            { id:2, severity:"secondary", label: ")", action:()=>{ console.log("empty") } },
+            { id:1, severity:"secondary", label: "(", action:()=>{ addLeftParenthesis() } },
+            { id:2, severity:"secondary", label: ")", action:()=>{ addRightParenthesis() } },
             { id:3, severity:"secondary", label: "n!", action:()=>{ handleFacultyOperation() } },
             { id:4, severity:"secondary", class: "bx bx-division font-bold h-full", action:()=>{ handleAddOperation(Operation.Division) } },
         ],
@@ -189,7 +223,7 @@ export function Calculator() {
             { id:4, severity:"secondary", class: "pi pi-times h-full", action:()=>{ handleAddOperation(Operation.Multiplication) } },
         ],
         [
-            { id:0, severity:"secondary", label: "10^x", action:()=>{ console.log("empty") } },
+            { id:0, severity:"secondary", label: "10^x", action:()=>{ addPowFunctions() } },
             { id:1, severity:"secondary", label: "4", action:()=>{ handleAddDigit(4) } },
             { id:2, severity:"secondary", label: "5", action:()=>{ handleAddDigit(5) } },
             { id:3, severity:"secondary", class:"", label: "6", action:()=>{ handleAddDigit(6) } },
@@ -215,10 +249,16 @@ export function Calculator() {
         <>
             <h1>Welcome to our Calculator Page.</h1>
             <p>Here you can use different calculation from normal Operation to high Operation and so on.</p>
+            <Button label={"Verifiy"} onClick={
+                () => {
+                    console.log("InputValue:", calculatorState.inputValue)
+                }
+            }/>
             <div className={"flex flex-row gap-2 justify-center"}>
                 <Card className="w-4 bg-gray-900">
                     <div className={"flex flex-column"}>
                         <InputText className="mb-3 text-4xl" placeholder="" value={calculatorState.inputValue}
+                                   onKeyDown={onKeyDown}
                                    onChange={
                                        (e) => setCalculatorState(prevState => {
                                            return {
@@ -234,12 +274,52 @@ export function Calculator() {
                         ))
                     }
                 </Card>
-                <Card header={"Verlauf"} className={"bg-gray-900 text-4xl text-gray-50"}>
-                    <ScrollPanel className={"text-4xl md:w-26rem w-full h-25rem"}>
-                        {calculatorState.history}
+                <Card title={"Calculation History"} className={"bg-gray-900 text-4xl text-gray-50"}>
+                    <Tooltip target={".info-icon"} content={"You can scroll vertical and horizontal in the History"}/>
+                    <ScrollPanel className={"text-2xl md:w-26rem w-full h-22rem"}>
+                        {calculatorState.history.map((term, index) => (
+                            <Fragment key={index}>
+                                {term}
+                                <br/>
+                            </Fragment>
+                        ))}
                     </ScrollPanel>
+                    <Button severity={"danger"} label={"Clean History"} onClick={() => {
+                        cleanHistory()
+                    }}/>
                 </Card>
             </div>
+            <Dialog header="Functions" draggable={false} visible={visible}
+                    headerClassName={"bg-gray-900 text-gray-50"} contentClassName={"bg-gray-900 flex flex-column gap-2"}
+                    onHide={() => {
+                        if (!visible) return;
+                        setVisible(false);
+                    }}
+            >
+                <div className={"flex gap-2"}>
+                    <Button label={"sin"} onClick={() => {
+                        addSinFunctions()
+                    }} severity={"secondary"}/>
+                    <Button label={"cos"} onClick={() => {
+                    }} severity={"secondary"}/>
+                    <Button label={"tan"} onClick={() => {
+                    }} severity={"secondary"}/>
+                </div>
+                <div className={"flex gap-2"}>
+                    <Button label={"sin^-1"} onClick={() => {
+                    }} severity={"secondary"}/>
+                    <Button label={"cos^-1"} onClick={() => {
+                    }} severity={"secondary"}/>
+                    <Button label={"tan^-1"} onClick={() => {
+                    }} severity={"secondary"}/>
+                </div>
+                <div className={"flex gap-2"}>
+                    <Button label={"e^x"} onClick={() => {
+                    }} severity={"secondary"}/>
+                    <Button label={"%"} onClick={() => {
+                    }} severity={"secondary"}/>
+                </div>
+            </Dialog>
         </>
     )
 }
