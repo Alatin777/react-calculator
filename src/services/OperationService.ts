@@ -40,8 +40,6 @@ export class OperationService {
     resetInput(history: string[]): CalculatorState {
         return {
             inputValue: "",
-            term: [],
-            isCalculated: false,
             history: history,
         }
     }
@@ -93,8 +91,8 @@ export class OperationService {
         return this.applyNumberTransform(calculatorState, "fact", this.factorial.bind(this))
     }
 
-    calculateLn(num: number): number {
-        return Math.log(num)
+    evaluateLn(calculatorState: CalculatorState): CalculatorState {
+        return this.applyNumberTransform(calculatorState, "ln", Math.log)
     }
 
     calculateTenPowerX(num: number): number {
@@ -105,12 +103,13 @@ export class OperationService {
         return Math.pow(x, y)
     }
 
-    takeAbs(num: number) {
-        return Math.abs(num)
+    takeAbs(calculatorState: CalculatorState): CalculatorState {
+        return this.applyNumberTransform(calculatorState, "abs", Math.abs)
     }
 
-    calculateOneDividedBy(num: number): number {
-        return num > 0 ? 1 / num : -1
+    evaluateOneDividedBy(calculatorState: CalculatorState): CalculatorState {
+        return this.applyNumberTransform(calculatorState, "1 / ",
+            (num: number) => num > 0 ? 1 / num : -1)
     }
 
     evaluateParsedValue(calculatorState: CalculatorState): number {

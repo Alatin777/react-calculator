@@ -100,6 +100,9 @@ export class ParserService {
                 }
                 cursor.index++
                 termToken.push(this.parseStringToArrayTerm(input, cursor))
+                if(this.isStringNumber(input[cursor.index])){
+                    termToken.push("*")
+                }
                 continue
             }
 

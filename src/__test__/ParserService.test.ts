@@ -36,6 +36,20 @@ describe('ParserService', () => {
             const actual = parserService.parseStringToArrayTerm(inputValue, cursor)
             expect(actual).toStrictEqual(termToken)
         })
+        test('parse String "(1+2)3" and get [[1, "+", 2],"*",3]', () => {
+            const inputValue: string = "(1+2)3"
+            const cursor: { index: number } = {index: 0}
+            const termToken: TermToken[] = [[1, "+", 2],"*",3]
+            const actual = parserService.parseStringToArrayTerm(inputValue, cursor)
+            expect(actual).toStrictEqual(termToken)
+        })
+        test('parse String "5(6+9)6+(1*3)2" and get [5,"*",[6, "+", 9],"*",6,"+",[1,"*",3],"*",2]', () => {
+            const inputValue: string = "5(6+9)6+(1*3)2"
+            const cursor: { index: number } = {index: 0}
+            const termToken: TermToken[] = [5,"*",[6, "+", 9],"*",6,"+",[1,"*",3],"*",2]
+            const actual = parserService.parseStringToArrayTerm(inputValue, cursor)
+            expect(actual).toStrictEqual(termToken)
+        })
         test('parse String "1+2*3" and get [1,"+",2,"*",3]', () => {
             const inputValue: string = "1+2*3"
             const cursor: { index: number } = {index: 0}

@@ -8,17 +8,19 @@ describe('OperationService', () => {
     beforeEach(() => {
         operationService = new OperationService(new ParserService())
     })
-    describe('calculateLn', () => {
-        test('calculate ln(1) and get 0', () => {
-            expect(operationService.calculateLn(1)).toBe(0)
+    describe('evaluateLn', () => {
+        test('evaluateLn ln(1) and get 0', () => {
+            const calculatorState: CalculatorState = {
+                inputValue: "1",
+                history: []
+            }
+            expect(operationService.evaluateLn(calculatorState).inputValue).toBe("0")
         })
     });
     describe('negateNumber', () => {
         test('negate 5 and get -5', () => {
             const calculatorState: CalculatorState = {
                 inputValue: "5",
-                term: [],
-                isCalculated: false,
                 history: []
             }
             expect(operationService.negateNumber(calculatorState)).toBe(-5)
@@ -28,19 +30,15 @@ describe('OperationService', () => {
         test('fact(3) and get 6', () => {
             const calculatorState: CalculatorState = {
                 inputValue: "3",
-                term: [],
-                isCalculated: false,
                 history: []
             }
-            expect(operationService.evaluateFactorial(calculatorState)).toBe(6)
+            expect(operationService.evaluateFactorial(calculatorState).inputValue).toBe("6")
         })
     });
     describe('evaluateParsedValue', () => {
         test('[1,"+",2] is 3', () => {
             const calculatorState: CalculatorState = {
                 inputValue: "1+2",
-                term: [],
-                isCalculated: false,
                 history: []
             }
             expect(operationService.evaluateParsedValue(calculatorState)).toBe(3)
@@ -48,8 +46,6 @@ describe('OperationService', () => {
         test('[1,"*",2] is 2', () => {
             const calculatorState: CalculatorState = {
                 inputValue: "1*2",
-                term: [],
-                isCalculated: false,
                 history: []
             }
             expect(operationService.evaluateParsedValue(calculatorState)).toBe(2)
@@ -57,8 +53,6 @@ describe('OperationService', () => {
         test('[1 "+" 2,"*",5] is 11', () => {
             const calculatorState: CalculatorState = {
                 inputValue: "1+2*5",
-                term: [],
-                isCalculated: false,
                 history: []
             }
             expect(operationService.evaluateParsedValue(calculatorState)).toBe(11)
@@ -66,8 +60,6 @@ describe('OperationService', () => {
         test('[1,"+",[2,"*",5]] is 11', () => {
             const calculatorState: CalculatorState = {
                 inputValue: "1+(2*5)",
-                term: [],
-                isCalculated: false,
                 history: []
             }
             expect(operationService.evaluateParsedValue(calculatorState)).toBe(11)
@@ -75,8 +67,6 @@ describe('OperationService', () => {
         test('[1 "+" [2,"*",5],[2,"+",3]] is 51', () => {
             const calculatorState: CalculatorState = {
                 inputValue: "1+(2*5)(2+3)",
-                term: [],
-                isCalculated: false,
                 history: []
             }
             expect(operationService.evaluateParsedValue(calculatorState)).toBe(51)
@@ -86,28 +76,20 @@ describe('OperationService', () => {
         test('add 1 and get "1"', () => {
             const calculatorState: CalculatorState = {
                 inputValue: "",
-                term: [],
-                isCalculated: false,
                 history: []
             }
             expect(operationService.addDigit(calculatorState, 1)).toStrictEqual({
                 inputValue: "1",
-                term: [],
-                isCalculated: false,
                 history: []
             })
         })
         test('add 1 and get "11"', () => {
             const calculatorState: CalculatorState = {
                 inputValue: "1",
-                term: [],
-                isCalculated: false,
                 history: []
             }
             expect(operationService.addDigit(calculatorState, 1)).toStrictEqual({
                 inputValue: "11",
-                term: [],
-                isCalculated: false,
                 history: []
             })
         })

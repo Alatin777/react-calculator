@@ -18,8 +18,6 @@ const operationService = new OperationService(new ParserService());
 export function Calculator() {
     const [calculatorState, setCalculatorState] = useState<CalculatorState>({
         inputValue: "",
-        term: [],
-        isCalculated: false,
         history: [],
     });
     const [visible, setVisible] = useState(false);
@@ -53,19 +51,19 @@ export function Calculator() {
         })
     }
 
-    function handleAddDigit(digit: number) {
+    const handleAddDigit = (digit: number) => {
         setCalculatorState(prevState => {
             return operationService.addDigit(prevState, digit)
         })
     }
 
-    function handleAddOperation(operation: OperationValue) {
+    const handleAddOperation = (operation: OperationValue) => {
         setCalculatorState(prevState => {
             return operationService.addOperation(prevState, operation)
         })
     }
 
-    function addLeftParenthesis() {
+    const addLeftParenthesis = () => {
         setCalculatorState(prevState => {
             return {
                 ...prevState,
@@ -74,7 +72,7 @@ export function Calculator() {
         })
     }
 
-    function addRightParenthesis() {
+    const addRightParenthesis = () => {
         setCalculatorState(prevState => {
             return {
                 ...prevState,
@@ -83,7 +81,7 @@ export function Calculator() {
         })
     }
 
-    function addSinFunctions() {
+    const addSinFunctions = () => {
         setCalculatorState(prevState => {
             return {
                 ...prevState,
@@ -92,20 +90,20 @@ export function Calculator() {
         })
     }
 
-    function addPowFunctions() {
+    const addPowFunctions = () => {
         setCalculatorState(prevState => {
             return {
                 ...prevState,
-                inputValue: prevState.inputValue + "Pow(,)"
+                inputValue: prevState.inputValue + "pow(,)"
             }
         })
     }
 
-    function handleResetInput() {
+    const handleResetInput = () => {
         setCalculatorState(operationService.resetInput(calculatorState.history))
     }
 
-    function handleEqualsOperation() {
+    const handleEqualsOperation = () => {
         setCalculatorState(prevState => {
             if (prevState.inputValue.length === 0) {
                 return prevState;
@@ -118,78 +116,28 @@ export function Calculator() {
         })
     }
 
-    function handleNegateOperation() {
+    const handleNegateOperation = () => {
         setCalculatorState(operationService.negateNumber(calculatorState))
     }
 
-    function handleFacultyOperation() {
-        setCalculatorState(operationService.evaluateFactorial(calculatorState)
-        //     prevState => {
-        //     const termNext = operationService.Factorial(prevState.term[prevState.term.length - 1] as number)
-        //     let inputNext = ""
-        //     for (let i = prevState.inputValue.length - 1; !Number.isNaN(+prevState.inputValue[i]); i--) {
-        //         inputNext = prevState.inputValue.slice(0, i)
-        //     }
-        //     return {
-        //         ...prevState,
-        //         term: [...prevState.term.slice(0, -1), termNext],
-        //         inputValue: inputNext + `${termNext}`,
-        //         history: [...prevState.history, "fact(" + prevState.inputValue + ")=" + `${termNext}`]
-        //     }
-        // }
-        )
+    const handleFacultyOperation = () => {
+        setCalculatorState(operationService.evaluateFactorial(calculatorState))
     }
 
-    function handleLogOperation() {
+    const handleLogOperation = () => {
         setCalculatorState(operationService.evaluateLog(calculatorState))
     }
 
-    function handleLnOperation() {
-        setCalculatorState(prevState => {
-            const termNext = operationService.calculateLn(prevState.term[prevState.term.length - 1] as number)
-            let inputNext = ""
-            for (let i = prevState.inputValue.length - 1; !Number.isNaN(+prevState.inputValue[i]); i--) {
-                inputNext = prevState.inputValue.slice(0, i)
-            }
-            return {
-                ...prevState,
-                term: [...prevState.term.slice(0, -1), termNext],
-                inputValue: inputNext + `${termNext}`,
-                history: [...prevState.history, "ln(" + prevState.inputValue + ")=" + `${termNext}`]
-            }
-        })
+    const handleLnOperation = () => {
+        setCalculatorState(operationService.evaluateLn(calculatorState))
     }
 
-    function handleOneDevidedByOperation() {
-        setCalculatorState(prevState => {
-            const termNext = operationService.calculateOneDividedBy(prevState.term[prevState.term.length - 1] as number)
-            let inputNext = ""
-            for (let i = prevState.inputValue.length - 1; !Number.isNaN(+prevState.inputValue[i]); i--) {
-                inputNext = prevState.inputValue.slice(0, i)
-            }
-            return {
-                ...prevState,
-                term: [...prevState.term.slice(0, -1), termNext],
-                inputValue: inputNext + `${termNext}`,
-                history: [...prevState.history, "1 / " + prevState.inputValue + " =" + `${termNext}`]
-            }
-        })
+    const handleOneDevidedByOperation = () => {
+        setCalculatorState(operationService.evaluateOneDividedBy(calculatorState))
     }
 
-    function handleTakeAbsOperation() {
-        setCalculatorState(prevState => {
-            const termNext = operationService.takeAbs(prevState.term[prevState.term.length - 1] as number)
-            let inputNext = ""
-            for (let i = prevState.inputValue.length - 1; !Number.isNaN(+prevState.inputValue[i]); i--) {
-                inputNext = prevState.inputValue.slice(0, i)
-            }
-            return {
-                ...prevState,
-                term: [...prevState.term.slice(0, -1), termNext],
-                inputValue: inputNext + `${termNext}`,
-                history: [...prevState.history, "abs(" + prevState.inputValue + ") =" + `${termNext}`]
-            }
-        })
+    const handleTakeAbsOperation = () => {
+        setCalculatorState(operationService.takeAbs(calculatorState))
     }
 
     // @formatter:off
