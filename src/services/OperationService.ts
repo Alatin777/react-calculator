@@ -56,6 +56,8 @@ export class OperationService {
                 return numberOne / numberTwo
             case "%":
                 return numberOne % numberTwo
+            case "^":
+                return this.evaluateXPowY(numberOne, numberTwo)
             default:
                 throw new Error(`Unknown operator ${operator}`)
         }
@@ -83,23 +85,43 @@ export class OperationService {
         return this.applyNumberTransform(calculatorState, "log", Math.log10)
     }
 
-    factorial(num: number): number {
+    evaluatePercentageNumber(calculatorState: CalculatorState): CalculatorState {
+        return this.applyNumberTransform(calculatorState, "%", (num: number) => num * 100)
+    }
+
+    evaluateDecimalNumber(calculatorState: CalculatorState): CalculatorState {
+        return this.applyNumberTransform(calculatorState, "d", (num: number) => num / 100)
+    }
+
+    private factorial(num: number): number {
         return (num === 0 || num === 1) ? 1 : num * this.factorial(num - 1)
     }
 
-    evaluateFactorial(calculatorState: CalculatorState) {
+    evaluateFactorial(calculatorState: CalculatorState): CalculatorState {
         return this.applyNumberTransform(calculatorState, "fact", this.factorial.bind(this))
+    }
+
+    evaluateXPowerTwo(calculatorState: CalculatorState): CalculatorState{
+        return this.applyNumberTransform(calculatorState, "x^2",
+            (num: number) => Math.pow(num, 2)
+        )
+    }
+
+    evaluateSquareRoot(calculatorState: CalculatorState): CalculatorState {
+        return this.applyNumberTransform(calculatorState, "sqrt", Math.sqrt)
     }
 
     evaluateLn(calculatorState: CalculatorState): CalculatorState {
         return this.applyNumberTransform(calculatorState, "ln", Math.log)
     }
 
-    calculateTenPowerX(num: number): number {
-        return Math.log10(num)
+    evaluateTenPowerX(calculatorState: CalculatorState): CalculatorState {
+        return this.applyNumberTransform(calculatorState, "10^x",
+            (num: number) => Math.pow(10, num)
+        )
     }
 
-    calculatePowXY(x: number, y: number): number {
+    private evaluateXPowY(x: number, y: number): number {
         return Math.pow(x, y)
     }
 
@@ -118,7 +140,7 @@ export class OperationService {
     }
 
     private isTermDotOperation(element: TermToken): boolean {
-        return element === Operation.Multiplication || element === Operation.Division || element === Operation.Percentage;
+        return element === Operation.Multiplication || element === Operation.Division || element === Operation.Modulo;
     }
 
     private isTermParenthesis(element: TermToken): element is TermToken[] {

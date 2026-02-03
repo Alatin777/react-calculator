@@ -32,7 +32,7 @@ export function Calculator() {
                 handleAddDigit(eulerNumber);
                 break;
             case "s":
-                addSinFunctions();
+                handleSinOperation();
                 break;
             case "p":
                 handleAddDigit(pi);
@@ -81,7 +81,16 @@ export function Calculator() {
         })
     }
 
-    const addSinFunctions = () => {
+    const addDot = () => {
+        setCalculatorState(prevState => {
+            return {
+                ...prevState,
+                inputValue: prevState.inputValue + "."
+            }
+        })
+    }
+
+    const handleSinOperation = () => {
         setCalculatorState(prevState => {
             return {
                 ...prevState,
@@ -90,11 +99,19 @@ export function Calculator() {
         })
     }
 
-    const addPowFunctions = () => {
+    const handleDecimalNumberInPercent = () => {
+        setCalculatorState(operationService.evaluatePercentageNumber(calculatorState))
+    }
+
+    const handlePercentNumberInDecimal = () => {
+        setCalculatorState(operationService.evaluateDecimalNumber(calculatorState))
+    }
+
+    const handleXPowerYOperation = () => {
         setCalculatorState(prevState => {
             return {
                 ...prevState,
-                inputValue: prevState.inputValue + "pow(,)"
+                inputValue: prevState.inputValue + "^"
             }
         })
     }
@@ -136,8 +153,20 @@ export function Calculator() {
         setCalculatorState(operationService.evaluateOneDividedBy(calculatorState))
     }
 
+    const handleXPowerTwo = () => {
+        setCalculatorState(operationService.evaluateXPowerTwo(calculatorState))
+    }
+
+    const handleSquareRootOperation = () => {
+        setCalculatorState(operationService.evaluateSquareRoot(calculatorState))
+    }
+
     const handleTakeAbsOperation = () => {
         setCalculatorState(operationService.takeAbs(calculatorState))
+    }
+
+    const handleTenPowerOfOperation = () => {
+        setCalculatorState(operationService.evaluateTenPowerX(calculatorState))
     }
 
     // @formatter:off
@@ -150,28 +179,28 @@ export function Calculator() {
             { id:4, severity:"warning", class: "pi pi-delete-left h-full", action:()=>{ handleDeleteToken() } },
         ],
         [
-            { id:0, severity:"secondary", label: "x²", action:()=>{ console.log("empty") } },
+            { id:0, severity:"secondary", label: "x²", action:()=>{ handleXPowerTwo() } },
             { id:1, severity:"secondary", label: "⅟x", action:()=>{ handleOneDevidedByOperation() } },
             { id:2, severity:"secondary", label: "|x|", action:()=>{ handleTakeAbsOperation() } },
             { id:3, severity:"secondary", label: "exp", action:()=>{ console.log("Reset") } },
-            { id:4, severity:"secondary", label: "mod", action:()=>{ handleAddOperation(Operation.Percentage) } },
+            { id:4, severity:"secondary", label: "mod", action:()=>{ handleAddOperation(Operation.Modulo) } },
         ],
         [
-            { id:0, severity:"secondary", class: "bx bx-square-root font-bold h-full", action:()=>{ console.log("empty") } },
+            { id:0, severity:"secondary", class: "bx bx-square-root font-bold h-full", action:()=>{ handleSquareRootOperation() } },
             { id:1, severity:"secondary", label: "(", action:()=>{ addLeftParenthesis() } },
             { id:2, severity:"secondary", label: ")", action:()=>{ addRightParenthesis() } },
             { id:3, severity:"secondary", label: "n!", action:()=>{ handleFacultyOperation() } },
             { id:4, severity:"secondary", class: "bx bx-division font-bold h-full", action:()=>{ handleAddOperation(Operation.Division) } },
         ],
         [
-            { id:0, severity:"secondary", label: "x^y", action:()=>{ console.log("empty") } },
+            { id:0, severity:"secondary", label: "x^y", action:()=>{ handleXPowerYOperation() } },
             { id:1, severity:"secondary", label: "7", action:()=>{ handleAddDigit(7) } },
             { id:2, severity:"secondary", label: "8", action:()=>{ handleAddDigit(8) } },
             { id:3, severity:"secondary", label: "9", action:()=>{ handleAddDigit(9) } },
             { id:4, severity:"secondary", class: "pi pi-times h-full", action:()=>{ handleAddOperation(Operation.Multiplication) } },
         ],
         [
-            { id:0, severity:"secondary", label: "10^x", action:()=>{ addPowFunctions() } },
+            { id:0, severity:"secondary", label: "10^x", action:()=>{ handleTenPowerOfOperation() } },
             { id:1, severity:"secondary", label: "4", action:()=>{ handleAddDigit(4) } },
             { id:2, severity:"secondary", label: "5", action:()=>{ handleAddDigit(5) } },
             { id:3, severity:"secondary", class:"", label: "6", action:()=>{ handleAddDigit(6) } },
@@ -188,7 +217,7 @@ export function Calculator() {
             { id:0, severity:"secondary", label: "ln", action:()=>{ handleLnOperation() } },
             { id:1, severity:"secondary", class: "bx bx-math-alt font-bold h-full", action:()=>{ handleNegateOperation() } },
             { id:2, severity:"secondary", label: "0", action:()=>{ handleAddDigit(0) } },
-            { id:3, severity:"secondary", label: ".", action:()=>{ console.log("Reset") } },
+            { id:3, severity:"secondary", label: ".", action:()=>{ addDot() } },
             { id:4, severity:"success", class: "pi pi-equals h-full", action:()=>{ handleEqualsOperation() } },
         ],
     ];
@@ -246,7 +275,7 @@ export function Calculator() {
             >
                 <div className={"flex gap-2"}>
                     <Button label={"sin"} onClick={() => {
-                        addSinFunctions()
+                        handleSinOperation()
                     }} severity={"secondary"}/>
                     <Button label={"cos"} onClick={() => {
                     }} severity={"secondary"}/>
@@ -262,9 +291,11 @@ export function Calculator() {
                     }} severity={"secondary"}/>
                 </div>
                 <div className={"flex gap-2"}>
-                    <Button label={"e^x"} onClick={() => {
-                    }} severity={"secondary"}/>
                     <Button label={"%"} onClick={() => {
+                        handleDecimalNumberInPercent()
+                    }} severity={"secondary"}/>
+                    <Button label={"d"} onClick={() => {
+                        handlePercentNumberInDecimal()
                     }} severity={"secondary"}/>
                 </div>
             </Dialog>

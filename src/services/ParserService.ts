@@ -5,7 +5,8 @@ import {type MathFunctionValue} from "../shared/types/MathFunction.ts";
 export class ParserService {
     private isStringOperation(value: string): boolean {
         return value === Operation.Plus || value === Operation.Minus
-            || value === Operation.Multiplication || value === Operation.Division || value === Operation.Percentage;
+            || value === Operation.Multiplication || value === Operation.Division
+            || value === Operation.Modulo || value === Operation.XPowerY;
     }
 
     private isStringNumber(value: string): boolean {

@@ -85,6 +85,13 @@ describe('ParserService', () => {
             const actual = parserService.parseStringToArrayTerm(inputValue, cursor)
             expect(actual).toStrictEqual(termToken)
         })
+        test('parse String "5^6" and get [5,"^",6]', () => {
+            const inputValue: string = "5^6"
+            const cursor: { index: number } = {index: 0}
+            const termToken: TermToken[] = [5,"^",6]
+            const actual = parserService.parseStringToArrayTerm(inputValue, cursor)
+            expect(actual).toStrictEqual(termToken)
+        })
         test('parse String "sin1" and get ["sin",[1]]', () => {
             const inputValue: string = "sin1"
             const cursor: { index: number } = {index: 0}

@@ -4,7 +4,8 @@ export const Operation = {
     Multiplication: "*",
     Division: "/",
     Equal: "=",
-    Percentage: "%",
+    Modulo: "%",
+    XPowerY: "^",
 } as const;
 
 export type OperationValue = typeof Operation[keyof typeof Operation];

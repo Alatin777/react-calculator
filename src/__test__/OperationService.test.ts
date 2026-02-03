@@ -35,6 +35,15 @@ describe('OperationService', () => {
             expect(operationService.evaluateFactorial(calculatorState).inputValue).toBe("6")
         })
     });
+    describe('evaluatePercentageNumber', () => {
+        test('evaluatePercentageNumber(0.02) and get 2', () => {
+            const calculatorState: CalculatorState = {
+                inputValue: "0.02",
+                history: []
+            }
+            expect(operationService.evaluatePercentageNumber(calculatorState).inputValue).toBe("2")
+        })
+    });
     describe('evaluateParsedValue', () => {
         test('[1,"+",2] is 3', () => {
             const calculatorState: CalculatorState = {
